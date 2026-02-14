@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Monster Guide | Bobo</title>
+    <title>Monster Guide</title>
     <style>
         :root {
             --bg-color: #f1f5f9; --card-bg: #ffffff; --primary: #6366f1;
@@ -71,6 +71,26 @@
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; font-size: 12px; font-weight: bold; color: var(--gray); margin-bottom: 6px; }
         .form-group textarea, .form-group input, .form-group select { width: 100%; border: 1px solid #e2e8f0; padding: 12px; border-radius: 12px; box-sizing: border-box; background: #f8fafc; font-size: 14px; outline: none; }
+        
+        /* 特别美化：周复盘弹窗里的三个复盘框 */
+        #review-modal textarea {
+            width: 100%;
+            border: 1px solid #e2e8f0;
+            padding: 12px;
+            border-radius: 12px;
+            box-sizing: border-box;
+            background: #f8fafc;
+            font-size: 14px;
+            outline: none;
+            margin-bottom: 10px;
+            display: block;
+            font-family: inherit;
+        }
+        #review-modal textarea:focus {
+            border-color: var(--primary);
+            background: #ffffff;
+        }
+
         .btn-submit { width: 100%; background: var(--primary); color: white; border: none; padding: 14px; border-radius: 18px; font-weight: bold; cursor: pointer; }
         .btn-cancel { width: 100%; background: none; border: none; color: var(--gray); margin-top: 10px; cursor: pointer; font-size: 14px; }
         .bottom-nav { position: fixed; bottom: 20px; width: 90%; max-width: 450px; left: 50%; transform: translateX(-50%); }
@@ -85,7 +105,7 @@
 
     <div id="monster-header">
         <div id="time-info">加载中...</div>
-        <span id="monster-avatar">🥚</span>
+        <span id="monster-avatar">🧙‍♂️</span>
         <div id="monster-dialogue" style="font-size: 13px; margin: 10px 0;">新学期准备好了吗？</div>
         
         <!-- 心情曲线 -->
@@ -111,7 +131,7 @@
     <!-- 生活页 -->
     <div id="page-life" style="width: 100%; max-width: 450px; display: none;">
         <div class="card">
-            <h3 style="margin-top:0">🧋 奶茶警戒柜</h3>
+            <h3 style="margin-top:0">🧋 奶茶柜</h3>
             <div class="tea-cabinet" id="tea-cabinet"></div>
             <div style="display:flex; justify-content:center; gap:10px;">
                 <button class="energy-btn" onclick="changeTea(-1)">- 丢弃</button>
@@ -119,7 +139,7 @@
             </div>
         </div>
         <div class="card">
-            <h3 style="margin-top:0">🏊 身体维护站</h3>
+            <h3 style="margin-top:0">🏊 健身站</h3>
             <div style="display:flex; justify-content:space-between; align-items:center;">
                 <div style="font-size:14px">本周已运动：<b id="val-sport" style="color:var(--primary); font-size:20px;">0</b> 次</div>
                 <button class="energy-btn" style="background:var(--success); color:white; padding:8px 20px" onclick="openSportModal()">打卡</button>
@@ -153,15 +173,15 @@
         <button class="btn-cancel" onclick="closeModals()">再想想</button>
     </div></div>
 
-    <!-- 运动弹窗 (UI 优化版) -->
+    <!-- 运动弹窗 -->
     <div id="sport-modal" class="modal"><div class="modal-content">
         <h2 style="margin-top:0">🏊 运动打卡</h2>
         <div class="form-group">
             <label>选择项目</label>
             <select id="sp-type">
                 <option value="run">🏃 跑步</option>
-                <option value="swim">🏊 游泳 (PE课)</option>
-                <option value="gym">🏋️ 健身房</option>
+                <option value="swim">🏊 游泳 </option>
+                <option value="gym">🏋️ 羽毛球</option>
                 <option value="other">💪 其他运动</option>
             </select>
         </div>
@@ -173,9 +193,23 @@
         <button class="btn-cancel" onclick="closeModals()">取消</button>
     </div></div>
 
-    <!-- 其余弹窗 (保持不动) -->
+    <!-- 其余弹窗 -->
     <div id="task-modal" class="modal"><div class="modal-content"><h2>🎒 新任务</h2><div class="form-group"><label>作业名称</label><input type="text" id="t-name"></div><div class="form-group"><label>截止时间</label><input type="date" id="t-ddl"></div><div class="form-group"><label>备注</label><textarea id="t-note" rows="3"></textarea></div><div class="form-group"><label>频率</label><select id="t-freq"><option value="once">不重复</option><option value="weekly">每周</option></select></div><button class="btn-submit" onclick="saveTask()">存入背包</button><button class="btn-cancel" onclick="closeModals()">取消</button></div></div>
-    <div id="review-modal" class="modal"><div class="modal-content"><h2>周复盘</h2><div style="display:flex; gap:10px; justify-content:center; margin:10px 0;"><div style="width:35px; height:35px; background:var(--danger); border-radius:8px;" onclick="setRevColor('red')"></div><div style="width:35px; height:35px; background:var(--warning); border-radius:8px;" onclick="setRevColor('yellow')"></div><div style="width:35px; height:35px; background:var(--success); border-radius:8px;" onclick="setRevColor('green')"></div></div><textarea id="rev-learned" rows="3" placeholder="学到了什么"></textarea><textarea id="rev-hardest" rows="3" placeholder="最难的点"></textarea><textarea id="rev-apply" rows="3" placeholder="怎么应用"></textarea><button class="btn-submit" onclick="saveReview()">完成复盘</button><button class="btn-cancel" onclick="closeModals()">取消</button></div></div>
+    
+    <!-- 复盘弹窗（CSS 已专门增强样式） -->
+    <div id="review-modal" class="modal"><div class="modal-content">
+        <h2>周复盘</h2>
+        <div style="display:flex; gap:10px; justify-content:center; margin:10px 0;">
+            <div style="width:35px; height:35px; background:var(--danger); border-radius:8px; cursor:pointer;" onclick="setRevColor('red')"></div>
+            <div style="width:35px; height:35px; background:var(--warning); border-radius:8px; cursor:pointer;" onclick="setRevColor('yellow')"></div>
+            <div style="width:35px; height:35px; background:var(--success); border-radius:8px; cursor:pointer;" onclick="setRevColor('green')"></div>
+        </div>
+        <textarea id="rev-learned" rows="3" placeholder="学到了什么？"></textarea>
+        <textarea id="rev-hardest" rows="3" placeholder="最难的点？"></textarea>
+        <textarea id="rev-apply" rows="3" placeholder="如何应用到实际？"></textarea>
+        <button class="btn-submit" onclick="saveReview()">完成复盘</button>
+        <button class="btn-cancel" onclick="closeModals()">取消</button>
+    </div></div>
 
     <script>
         const SEMESTER_START = new Date('2026-03-02');
@@ -273,7 +307,7 @@
                     <b>${l.who}</b> <small>${l.date}</small>
                     <p style="margin:5px 0">${l.memo}</p>
                 </div>
-            `).join('');
+            `).join('') || '<div style="color:var(--gray);font-size:12px;text-align:center">还没有记录幸福瞬间...</div>';
 
             // 基础信息
             const now = new Date();
