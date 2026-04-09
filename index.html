@@ -3,99 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Monster Guide v2.8</title>
+    <title>Monster Guide v3.0</title>
     <style>
         :root {
             --bg-color: #f8fafc; --card-bg: #ffffff; --primary: #6366f1;
             --accent: #818cf8; --text: #1e293b; --success: #22c55e;
             --warning: #eab308; --danger: #ef4444; --gray: #94a3b8;
-            --life-primary: #f472b6; --main-mission: #8b5cf6;
             --chill-purple: #f5f3ff;
         }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
             background-color: var(--bg-color); color: var(--text); 
-            margin: 0; padding: 15px 15px 150px;
+            margin: 0; padding: 15px 15px 120px;
             display: flex; flex-direction: column; align-items: center;
             -webkit-font-smoothing: antialiased;
         }
 
         button { border: none; outline: none; cursor: pointer; font-family: inherit; transition: all 0.2s ease; -webkit-appearance: none; }
 
-        .tab-nav { display: flex; background: #e2e8f0; padding: 4px; border-radius: 20px; width: 100%; max-width: 450px; margin-bottom: 20px; }
+        /* 顶部导航切换 */
+        .tab-nav { display: flex; background: #e2e8f0; padding: 4px; border-radius: 20px; width: 100%; max-width: 450px; margin-bottom: 20px; position: sticky; top: 10px; z-index: 100; }
         .tab-btn { flex: 1; padding: 12px; border-radius: 16px; font-weight: bold; background: transparent; color: var(--gray); font-size: 14px; }
         .tab-btn.active { background: white; color: var(--primary); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
 
-        /* 顶部怪兽区域 */
-        #monster-header { text-align: center; padding: 25px; background: var(--card-bg); border-radius: 35px; box-shadow: 0 10px 30px rgba(0,0,0,0.04); width: 100%; max-width: 450px; margin-bottom: 20px; box-sizing: border-box; }
-        #time-info { font-size: 16px; font-weight: 800; color: var(--primary); letter-spacing: 0.8px; text-transform: uppercase; }
+        /* 模块卡片通用 */
+        .card { background: var(--card-bg); border-radius: 28px; padding: 20px; width: 100%; max-width: 450px; margin-bottom: 18px; box-shadow: 0 4px 15px rgba(0,0,0,0.02); box-sizing: border-box; }
+        
+        /* 怪兽区域 */
+        #monster-header { text-align: center; padding: 25px; background: var(--card-bg); border-radius: 35px; width: 100%; max-width: 450px; margin-bottom: 20px; box-sizing: border-box; }
+        #time-info { font-size: 15px; font-weight: 800; color: var(--primary); letter-spacing: 0.8px; }
         #monster-avatar { font-size: 65px; display: block; margin: 15px 0; animation: breathe 4s ease-in-out infinite; }
         @keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
         
         .mood-chart { display: flex; align-items: flex-end; justify-content: space-around; height: 45px; margin: 20px 0; padding: 0 40px; }
         .mood-bar { width: 10px; background: #f1f5f9; border-radius: 5px; transition: height 0.3s ease; }
         .mood-bar.active { background: var(--primary); }
-
         .energy-btn { background: #f1f5f9; width: 45px; height: 45px; border-radius: 15px; font-size: 20px; display: flex; align-items: center; justify-content: center; }
-        .energy-btn:active { transform: scale(0.9); }
 
-        /* 主线任务样式 */
-        .main-mission-card { background: linear-gradient(135deg, #8b5cf6, #6366f1); color: white; padding: 20px; border-radius: 28px; margin-bottom: 20px; width: 100%; max-width: 450px; box-sizing: border-box; box-shadow: 0 8px 20px rgba(99, 102, 241, 0.2); }
+        /* 主线任务 */
+        .main-mission-card { background: linear-gradient(135deg, #8b5cf6, #6366f1); color: white; padding: 20px; border-radius: 28px; margin-bottom: 20px; width: 100%; max-width: 450px; box-sizing: border-box; }
         .main-mission-item { background: rgba(255,255,255,0.15); padding: 12px 16px; border-radius: 18px; margin-top: 10px; display: flex; justify-content: space-between; align-items: center; font-size: 14px; backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.1); }
-        
-        /* 修复后的主线删除按钮 */
-        .btn-delete-mission { 
-            background: rgba(255, 255, 255, 0.2); 
-            width: 26px; height: 26px; 
-            border-radius: 8px; 
-            color: white; 
-            display: flex; align-items: center; justify-content: center; 
-            font-size: 16px; font-weight: bold;
-        }
-        .btn-delete-mission:active { background: rgba(255, 255, 255, 0.4); transform: scale(0.9); }
+        .btn-delete-mission { background: rgba(255, 255, 255, 0.2); width: 26px; height: 26px; border-radius: 8px; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; }
 
-        .btn-add-small { background: rgba(255,255,255,0.2); width: 30px; height: 30px; border-radius: 10px; color: white; display: flex; align-items: center; justify-content: center; font-size: 18px; }
-
-        /* Chill 任务卡片 */
-        .urgent-item { border-left: 4px solid var(--primary); background: var(--chill-purple); margin-bottom: 10px; padding: 14px; border-radius: 18px; display: flex; justify-content: space-between; align-items: center; }
-        .urgent-info b { display: block; font-size: 15px; color: #4338ca; margin-bottom: 2px; }
-        .urgent-info small { color: var(--accent); font-weight: 600; font-size: 12px; }
-
+        /* 全景图与焦点任务 */
         .heatmap-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 8px; margin-top: 15px; }
         .heat-box { aspect-ratio: 1; border-radius: 8px; background: #f1f5f9; font-size: 10px; display: flex; align-items: center; justify-content: center; color: #cbd5e1; }
         .heat-box.today { border: 2px solid var(--primary); font-weight: bold; color: var(--primary); background: white; }
         .heat-box.has-task { background: #e0e7ff; color: #6366f1; font-weight: 600; }
         .heat-box.many-tasks { background: #6366f1; color: white; }
 
-        .card { background: var(--card-bg); border-radius: 28px; padding: 20px; width: 100%; max-width: 450px; margin-bottom: 18px; box-shadow: 0 4px 15px rgba(0,0,0,0.02); box-sizing: border-box; }
-        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-        .card-title { font-size: 17px; font-weight: 800; color: var(--text); }
-        
+        .urgent-item { border-left: 4px solid var(--primary); background: var(--chill-purple); margin-bottom: 10px; padding: 14px; border-radius: 18px; display: flex; justify-content: space-between; align-items: center; }
+        .urgent-info b { display: block; font-size: 15px; color: #4338ca; }
+        .urgent-info small { color: var(--accent); font-weight: 600; font-size: 12px; }
+
+        /* 文件夹折叠逻辑 */
+        .folder-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; padding: 5px 0; }
+        .folder-title { font-size: 17px; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+        .folder-arrow { font-size: 12px; color: var(--gray); transition: 0.3s; }
+        .folder-arrow.open { transform: rotate(180deg); }
+        .folder-content { display: none; margin-top: 15px; border-top: 1px dashed #e2e8f0; padding-top: 10px; }
+        .folder-content.open { display: block; }
+
+        /* 子任务样式 */
         .task-item { display: flex; justify-content: space-between; align-items: center; background: #f8fafc; padding: 12px 16px; border-radius: 18px; margin-top: 10px; border: 1px solid #f1f5f9; }
         .task-info b { font-size: 14px; color: var(--text); }
-        .task-info span { font-size: 12px; color: var(--gray); margin-left: 8px; }
+        .task-info span { font-size: 11px; color: var(--gray); margin-left: 8px; }
+        .btn-check { width: 30px; height: 30px; border-radius: 10px; border: 2.5px solid #e0e7ff; background: white; color: transparent; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+        .btn-check:hover { border-color: var(--primary); color: var(--primary); }
 
-        .btn-check { width: 30px; height: 30px; border-radius: 10px; border: 2.5px solid #e0e7ff; background: white; color: transparent; font-size: 14px; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
-        .btn-check:hover, .btn-check:active { border-color: var(--primary); color: var(--primary); transform: scale(1.05); }
-
-        .bottom-nav { position: fixed; bottom: 30px; width: 90%; max-width: 450px; left: 50%; transform: translateX(-50%); z-index: 100; }
+        /* 底部操作 */
+        .bottom-nav { position: fixed; bottom: 30px; width: 90%; max-width: 450px; left: 50%; transform: translateX(-50%); }
         .btn-main { width: 100%; background: var(--primary); color: white; padding: 18px; border-radius: 24px; font-weight: bold; font-size: 16px; box-shadow: 0 10px 20px rgba(99, 102, 241, 0.2); }
 
+        /* 弹窗 */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(10px); }
-        .modal-content { background: white; padding: 30px; border-radius: 35px; width: 85%; max-width: 400px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
+        .modal-content { background: white; padding: 30px; border-radius: 35px; width: 85%; max-width: 400px; }
         .form-group input { width: 100%; border: 2px solid #f1f5f9; padding: 14px; border-radius: 18px; box-sizing: border-box; font-size: 16px; margin-top: 8px; outline: none; }
-        
-        .tea-cabinet { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin: 15px 0; padding: 15px; background: #fff5f7; border-radius: 20px; }
     </style>
 </head>
 <body>
 
     <div class="tab-nav">
-        <button class="tab-btn active" onclick="switchTab('study')">📖 学业效率</button>
-        <button class="tab-btn" onclick="switchTab('life')">🍀 生活平衡</button>
+        <button class="tab-btn active" id="btn-focus" onclick="switchTab('focus')">🎯 今日焦点</button>
+        <button class="tab-btn" id="btn-projects" onclick="switchTab('projects')">🗃️ 任务仓库</button>
     </div>
 
+    <!-- 顶部怪兽区 (两页公用或仅焦点页，建议公用以保持身份感) -->
     <div id="monster-header">
         <div id="time-info">...</div>
         <span id="monster-avatar">👾</span>
@@ -108,98 +102,99 @@
         </div>
     </div>
 
-    <!-- 主线任务 -->
-    <div class="main-mission-card">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-            <span style="font-weight:bold; font-size:16px;">🔥 当前主要目标</span>
-            <button class="btn-add-small" onclick="openModal('main-mission-modal')">+</button>
+    <!-- 今日焦点页 -->
+    <div id="page-focus" style="width: 100%; max-width: 450px;">
+        <div class="main-mission-card">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-weight:bold; font-size:16px;">🔥 当前主要目标</span>
+                <button style="background:rgba(255,255,255,0.2); width:30px; height:30px; border-radius:10px; color:white;" onclick="openModal('main-mission-modal')">+</button>
+            </div>
+            <div id="main-mission-list"></div>
         </div>
-        <div id="main-mission-list"></div>
-    </div>
 
-    <div id="page-study" style="width: 100%; max-width: 450px;">
-        <div class="card" id="urgent-flow-card" style="display:none; background: #fff;">
-            <div class="card-title" style="font-size:14px; margin-bottom:12px; color:var(--primary)">✨ 接下来要做...</div>
-            <div id="urgent-list"></div>
-        </div>
         <div class="card">
-            <div class="card-title" style="font-size:14px;">📅 未来 DDL 全景图</div>
+            <div style="font-size:14px; font-weight:bold; color:var(--primary); margin-bottom:12px;">📅 未来 DDL 全景图</div>
             <div class="heatmap-grid" id="heatmap-grid"></div>
         </div>
-        <div id="course-list"></div>
+
+        <div class="card" id="urgent-flow-card">
+            <div style="font-size:14px; font-weight:bold; color:var(--primary); margin-bottom:12px;">✨ 接下来要做...</div>
+            <div id="urgent-list"></div>
+        </div>
+    </div>
+
+    <!-- 任务仓库页 -->
+    <div id="page-projects" style="width: 100%; max-width: 450px; display: none;">
+        <div id="folder-container"></div>
         <div class="bottom-nav"><button class="btn-main" onclick="addNewCourse()">+ 添加新课程项目</button></div>
     </div>
 
-    <div id="page-life" style="width: 100%; max-width: 450px; display: none;">
-        <div class="card">
-            <h3 style="margin-top:0">🧋 奶茶柜</h3>
-            <div class="tea-cabinet" id="tea-cabinet"></div>
-            <button class="btn-main" style="background:var(--life-primary); box-shadow: 0 10px 20px rgba(244, 114, 182, 0.2);" onclick="changeTea(1)">喝一杯奶茶奖励自己!</button>
-        </div>
-    </div>
-
+    <!-- 弹窗 -->
     <div id="main-mission-modal" class="modal"><div class="modal-content">
         <h2 style="margin-top:0">设定主线</h2>
-        <div class="form-group"><input type="text" id="mm-name" placeholder="如：XX项目负责人"></div>
+        <input type="text" id="mm-name" class="form-group" style="width:100%; border:2px solid #f1f5f9; padding:14px; border-radius:18px;" placeholder="如：XX项目负责人">
         <button class="btn-main" style="margin-top:20px;" onclick="saveMainMission()">确定开启</button>
-        <button class="btn-main" style="background:#f1f5f9; color:var(--gray); box-shadow:none; margin-top:10px;" onclick="closeModals()">再想想</button>
+        <button class="btn-main" style="background:#f1f5f9; color:var(--gray); box-shadow:none; margin-top:10px;" onclick="closeModals()">取消</button>
     </div></div>
 
     <div id="task-modal" class="modal"><div class="modal-content">
         <h2 style="margin-top:0">🎒 添加子任务</h2>
-        <div class="form-group"><label>任务名</label><input type="text" id="t-name"></div>
-        <div class="form-group" style="margin-top:15px;"><label>截止日期</label><input type="date" id="t-ddl"></div>
+        <div class="form-group"><label style="font-size:12px; color:var(--gray)">任务名</label><input type="text" id="t-name"></div>
+        <div class="form-group" style="margin-top:15px;"><label style="font-size:12px; color:var(--gray)">截止日期</label><input type="date" id="t-ddl"></div>
         <button class="btn-main" style="margin-top:20px;" onclick="saveTask()">存入背包</button>
         <button class="btn-main" style="background:#f1f5f9; color:var(--gray); box-shadow:none; margin-top:10px;" onclick="closeModals()">取消</button>
     </div></div>
 
     <script>
-        // 【校准完成】默认 2026年3月2日 为第一周周一
         const SEMESTER_START = new Date('2026-03-02'); 
-
         let state = {
             energy: 1,
-            courses: JSON.parse(localStorage.getItem('monster_v7_data')) || [],
-            moodHistory: JSON.parse(localStorage.getItem('monster_mood_v2')) || [],
-            life: JSON.parse(localStorage.getItem('monster_life_v3')) || { teaCount: 0 },
+            courses: JSON.parse(localStorage.getItem('monster_v8_data')) || [],
             mainMissions: JSON.parse(localStorage.getItem('monster_main_missions')) || [],
+            moodHistory: JSON.parse(localStorage.getItem('monster_mood_v2')) || [],
+            openFolders: [], // 记录哪些文件夹是展开的
             curCId: null
         };
 
         function save() {
-            localStorage.setItem('monster_v7_data', JSON.stringify(state.courses));
+            localStorage.setItem('monster_v8_data', JSON.stringify(state.courses));
             localStorage.setItem('monster_main_missions', JSON.stringify(state.mainMissions));
-            localStorage.setItem('monster_life_v3', JSON.stringify(state.life));
             localStorage.setItem('monster_mood_v2', JSON.stringify(state.moodHistory));
         }
 
         function switchTab(tab) {
-            document.getElementById('page-study').style.display = (tab === 'study' ? 'block' : 'none');
-            document.getElementById('page-life').style.display = (tab === 'life' ? 'block' : 'none');
-            document.querySelectorAll('.tab-btn').forEach((btn, idx) => {
-                btn.classList.toggle('active', (idx === 0 && tab === 'study') || (idx === 1 && tab === 'life'));
-            });
+            document.getElementById('page-focus').style.display = (tab === 'focus' ? 'block' : 'none');
+            document.getElementById('page-projects').style.display = (tab === 'projects' ? 'block' : 'none');
+            document.getElementById('btn-focus').classList.toggle('active', tab === 'focus');
+            document.getElementById('btn-projects').classList.toggle('active', tab === 'projects');
+            render();
+        }
+
+        function toggleFolder(id) {
+            const idx = state.openFolders.indexOf(id);
+            if (idx > -1) state.openFolders.splice(idx, 1);
+            else state.openFolders.push(id);
             render();
         }
 
         function render() {
-            renderTime(); renderMainMissions(); renderHeatmap(); renderUrgentFlow(); renderCourses(); renderLife(); renderMood();
+            renderTime();
+            renderMood();
+            renderMainMissions();
+            if (document.getElementById('page-focus').style.display !== 'none') {
+                renderHeatmap();
+                renderUrgentFlow();
+            } else {
+                renderFolders();
+            }
         }
 
         function renderTime() {
             const now = new Date();
-            // 计算时间差
-            const diffTime = now - SEMESTER_START;
-            const diffDays = Math.floor(diffTime / (24 * 60 * 60 * 1000));
-            
-            // 周数计算：(天数 / 7) 取整 + 1
-            // 如果是在开学前，则显示 Week 1 或 准备中
-            let weekNum = Math.floor(diffDays / 7) + 1;
-            
+            const diffDays = Math.floor((now - SEMESTER_START) / (24 * 60 * 60 * 1000));
+            const weekNum = Math.floor(diffDays / 7) + 1;
             const weekDay = ["日", "一", "二", "三", "四", "五", "六"][now.getDay()];
-            
-            // 修正显示显示逻辑：即使没到 2026 年，也方便你现在预览效果
-            document.getElementById('time-info').innerText = `WEEK ${Math.abs(weekNum)} · 星期${weekDay}`;
+            document.getElementById('time-info').innerText = `WEEK ${Math.max(1, weekNum)} · 星期${weekDay}`;
         }
 
         function renderMainMissions() {
@@ -230,52 +225,65 @@
             const all = [];
             state.courses.forEach(c => c.tasks.forEach(t => { if(!t.done) all.push({...t, cName: c.name, cId: c.id}); }));
             all.sort((a,b) => new Date(a.ddl) - new Date(b.ddl));
-            const card = document.getElementById('urgent-flow-card');
             const list = document.getElementById('urgent-list');
             if(all.length > 0) {
-                card.style.display = 'block';
-                list.innerHTML = all.slice(0, 3).map(t => `
+                list.innerHTML = all.slice(0, 5).map(t => `
                     <div class="urgent-item">
                         <div class="urgent-info">
-                            <b>${t.name} <small>@${t.cName}</small></b>
+                            <b>${t.name} <small style="font-weight:normal; color:var(--gray)">@${t.cName}</small></b>
                             <small>📅 ${t.ddl || '待定'}</small>
                         </div>
                         <button class="btn-check" onclick="finishTask(${t.cId}, ${t.id})">✓</button>
                     </div>
                 `).join('');
-            } else { card.style.display = 'none'; }
+            } else { list.innerHTML = '<div style="text-align:center; color:var(--gray); font-size:12px;">目前没有紧急任务，享受当下吧 ☕️</div>'; }
         }
 
-        function renderCourses() {
-            const container = document.getElementById('course-list'); container.innerHTML = '';
+        function renderFolders() {
+            const container = document.getElementById('folder-container');
+            container.innerHTML = '';
             state.courses.forEach(c => {
-                const tasksHtml = c.tasks.filter(t => !t.done).map(t => `
-                    <div class="task-item">
-                        <div class="task-info"><b>${t.name}</b> <span>${t.ddl ? t.ddl.slice(5) : ''}</span></div>
-                        <button class="btn-check" onclick="finishTask(${c.id}, ${t.id})">✓</button>
+                const isOpen = state.openFolders.includes(c.id);
+                const activeTasks = c.tasks.filter(t => !t.done);
+                const folder = document.createElement('div');
+                folder.className = 'card';
+                folder.innerHTML = `
+                    <div class="folder-header" onclick="toggleFolder(${c.id})">
+                        <div class="folder-title">
+                            📚 ${c.name} 
+                            <span style="font-size:11px; background:var(--chill-purple); color:var(--primary); padding:2px 8px; border-radius:10px;">${activeTasks.length}</span>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:15px;">
+                            <button class="energy-btn" style="width:30px; height:30px; font-size:14px; background:var(--chill-purple); color:var(--primary)" onclick="event.stopPropagation(); openAddTask(${c.id})">+</button>
+                            <span class="folder-arrow ${isOpen?'open':''}">▼</span>
+                        </div>
                     </div>
-                `).join('');
-                const div = document.createElement('div'); div.className = 'card';
-                div.innerHTML = `<div class="card-header"><h3 class="card-title">📚 ${c.name}</h3><button class="btn-add-small" style="background:var(--chill-purple); color:var(--primary)" onclick="openAddTask(${c.id})">+</button></div>${tasksHtml || '<div style="font-size:12px; color:var(--gray); text-align:center; margin-top:10px;">暂无计划</div>'}`;
-                container.appendChild(div);
+                    <div class="folder-content ${isOpen?'open':''}">
+                        ${activeTasks.map(t => `
+                            <div class="task-item">
+                                <div class="task-info"><b>${t.name}</b> <span>${t.ddl ? t.ddl.slice(5) : ''}</span></div>
+                                <button class="btn-check" onclick="finishTask(${c.id}, ${t.id})">✓</button>
+                            </div>
+                        `).join('') || '<div style="text-align:center; font-size:12px; color:var(--gray); padding:10px;">暂无任务，点击上方 + 号添加</div>'}
+                        <button onclick="deleteCourse(${c.id})" style="margin-top:15px; font-size:11px; color:var(--danger); background:none; width:100%; text-align:right;">× 删除此课程项目</button>
+                    </div>
+                `;
+                container.appendChild(folder);
             });
-        }
-
-        function renderLife() {
-            const cab = document.getElementById('tea-cabinet'); cab.innerHTML = '';
-            for(let i=0; i<state.life.teaCount; i++) cab.innerHTML += '<span style="font-size:28px">🧋</span>';
         }
 
         function renderMood() {
             const chart = document.getElementById('mood-chart'); chart.innerHTML = '';
+            const todayStr = new Date().toISOString().split('T')[0];
             for (let i = 0; i < 7; i++) {
                 const d = new Date(); d.setDate(d.getDate() - (6 - i));
                 const dStr = d.toISOString().split('T')[0];
                 const rec = state.moodHistory.find(m => m.date === dStr);
-                chart.innerHTML += `<div class="mood-bar ${dStr===new Date().toISOString().split('T')[0]?'active':''}" style="height: ${rec ? rec.val * 15 : 8}px"></div>`;
+                chart.innerHTML += `<div class="mood-bar ${dStr===todayStr?'active':''}" style="height: ${rec ? rec.val * 15 : 8}px"></div>`;
             }
         }
 
+        // --- 交互功能 ---
         function openModal(id) { document.getElementById(id).style.display = 'flex'; }
         function closeModals() { document.querySelectorAll('.modal').forEach(m => m.style.display='none'); }
         function saveMainMission() {
@@ -283,7 +291,8 @@
             if(txt) { state.mainMissions.push({ id: Date.now(), text: txt }); save(); render(); closeModals(); }
         }
         function deleteMainMission(id) { state.mainMissions = state.mainMissions.filter(m => m.id !== id); save(); render(); }
-        function addNewCourse() { const n = prompt("项目名称:"); if(n) { state.courses.push({ id: Date.now(), name: n, tasks: [] }); save(); render(); } }
+        function addNewCourse() { const n = prompt("课程/项目名称:"); if(n) { state.courses.push({ id: Date.now(), name: n, tasks: [] }); save(); render(); } }
+        function deleteCourse(id) { if(confirm("确定删除整个课程吗？")) { state.courses = state.courses.filter(c => c.id !== id); save(); render(); } }
         function openAddTask(cid) { state.curCId = cid; openModal('task-modal'); }
         function saveTask() {
             const n = document.getElementById('t-name').value;
@@ -297,7 +306,7 @@
             state.moodHistory.push({ date: d, val: v+1 });
             save(); render();
         }
-        function changeTea(n) { state.life.teaCount += n; save(); render(); }
+
         render();
     </script>
 </body>
