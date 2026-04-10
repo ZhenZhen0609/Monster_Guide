@@ -1,0 +1,12 @@
+{
+ "name":"Monster Guide",
+ "start_url":"/",
+ "display":"standalone",
+ "icons":[
+  {
+   "src":"icon.png",
+   "sizes":"512*512",
+   "type":"image/png"
+   }
+  ]
+}
