@@ -2,309 +2,343 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Monster Guide v3.0</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Monster Guide v3.5</title>
     <style>
         :root {
             --bg-color: #f8fafc; --card-bg: #ffffff; --primary: #6366f1;
             --accent: #818cf8; --text: #1e293b; --success: #22c55e;
             --warning: #eab308; --danger: #ef4444; --gray: #94a3b8;
-            --chill-purple: #f5f3ff;
+            --chill-purple: #f5f3ff; --main-mission: #8b5cf6;
         }
+
+        * { -webkit-tap-highlight-color: transparent; outline: none; box-sizing: border-box; }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif; 
             background-color: var(--bg-color); color: var(--text); 
-            margin: 0; padding: 15px 15px 120px;
+            margin: 0; padding: 10px 15px calc(100px + env(safe-area-inset-bottom));
             display: flex; flex-direction: column; align-items: center;
-            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden; -webkit-overflow-scrolling: touch;
         }
 
-        button { border: none; outline: none; cursor: pointer; font-family: inherit; transition: all 0.2s ease; -webkit-appearance: none; }
+        button { border: none; outline: none; cursor: pointer; transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
 
-        /* 顶部导航切换 */
+        /* 顶部状态栏 */
+        .top-status-bar { display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 450px; margin-bottom: 15px; padding: 10px 5px; }
+        .time-week { font-size: 24px; font-weight: 900; color: var(--primary); }
+        .time-day { font-size: 12px; color: var(--gray); font-weight: bold; margin-top: 2px; display: block; }
+
+        /* 怪兽与气泡状态 */
+        .monster-container { position: relative; width: 85px; height: 85px; display: flex; align-items: center; justify-content: center; }
+        #monster-avatar { font-size: 45px; z-index: 2; animation: breathe 4s ease-in-out infinite; }
+        .energy-bubble { position: absolute; width: 32px; height: 32px; border-radius: 50%; background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.08); display: flex; align-items: center; justify-content: center; font-size: 16px; z-index: 3; border: 1px solid #f1f5f9; }
+        .energy-bubble.active { border: 2.5px solid var(--primary); z-index: 4; transform: scale(1.1); }
+        .bubble-0 { top: -2px; left: -8px; } .bubble-1 { top: -10px; right: 0px; } .bubble-2 { bottom: 5px; right: -10px; }
+
+        /* 导航 */
         .tab-nav { display: flex; background: #e2e8f0; padding: 4px; border-radius: 20px; width: 100%; max-width: 450px; margin-bottom: 20px; position: sticky; top: 10px; z-index: 100; }
         .tab-btn { flex: 1; padding: 12px; border-radius: 16px; font-weight: bold; background: transparent; color: var(--gray); font-size: 14px; }
-        .tab-btn.active { background: white; color: var(--primary); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .tab-btn.active { background: white; color: var(--primary); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
 
-        /* 模块卡片通用 */
-        .card { background: var(--card-bg); border-radius: 28px; padding: 20px; width: 100%; max-width: 450px; margin-bottom: 18px; box-shadow: 0 4px 15px rgba(0,0,0,0.02); box-sizing: border-box; }
-        
-        /* 怪兽区域 */
-        #monster-header { text-align: center; padding: 25px; background: var(--card-bg); border-radius: 35px; width: 100%; max-width: 450px; margin-bottom: 20px; box-sizing: border-box; }
-        #time-info { font-size: 15px; font-weight: 800; color: var(--primary); letter-spacing: 0.8px; }
-        #monster-avatar { font-size: 65px; display: block; margin: 15px 0; animation: breathe 4s ease-in-out infinite; }
-        @keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
-        
-        .mood-chart { display: flex; align-items: flex-end; justify-content: space-around; height: 45px; margin: 20px 0; padding: 0 40px; }
-        .mood-bar { width: 10px; background: #f1f5f9; border-radius: 5px; transition: height 0.3s ease; }
-        .mood-bar.active { background: var(--primary); }
-        .energy-btn { background: #f1f5f9; width: 45px; height: 45px; border-radius: 15px; font-size: 20px; display: flex; align-items: center; justify-content: center; }
+        /* 核心执行卡片 */
+        .action-core { width: 100%; max-width: 450px; }
+        .card { background: var(--card-bg); border-radius: 30px; padding: 20px; margin-bottom: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.02); }
+        .main-mission-card { background: linear-gradient(135deg, #8b5cf6, #6366f1); color: white; border: none; }
+        .mission-group { margin-top: 15px; border-radius: 20px; background: rgba(255,255,255,0.12); padding-bottom: 8px; }
+        .mission-header { padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; }
+        .sub-task-item { display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.12); padding: 10px 15px; border-radius: 12px; margin: 0 10px 8px; font-size: 14px; }
+        .sub-task-item.done { opacity: 0.5; text-decoration: line-through; }
 
-        /* 主线任务 */
-        .main-mission-card { background: linear-gradient(135deg, #8b5cf6, #6366f1); color: white; padding: 20px; border-radius: 28px; margin-bottom: 20px; width: 100%; max-width: 450px; box-sizing: border-box; }
-        .main-mission-item { background: rgba(255,255,255,0.15); padding: 12px 16px; border-radius: 18px; margin-top: 10px; display: flex; justify-content: space-between; align-items: center; font-size: 14px; backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.1); }
-        .btn-delete-mission { background: rgba(255, 255, 255, 0.2); width: 26px; height: 26px; border-radius: 8px; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+        .urgent-item { display: flex; justify-content: space-between; align-items: center; background: #f8fafc; padding: 14px 18px; border-radius: 20px; margin-top: 10px; border: 1px solid #f1f5f9; }
+        .btn-check { width: 30px; height: 30px; border-radius: 10px; border: 2px solid #e0e7ff; background: white; display:flex; align-items:center; justify-content:center; color:transparent; font-weight:bold; }
+        .btn-check:active { border-color: var(--primary); color: var(--primary); }
 
-        /* 全景图与焦点任务 */
-        .heatmap-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 8px; margin-top: 15px; }
-        .heat-box { aspect-ratio: 1; border-radius: 8px; background: #f1f5f9; font-size: 10px; display: flex; align-items: center; justify-content: center; color: #cbd5e1; }
-        .heat-box.today { border: 2px solid var(--primary); font-weight: bold; color: var(--primary); background: white; }
-        .heat-box.has-task { background: #e0e7ff; color: #6366f1; font-weight: 600; }
-        .heat-box.many-tasks { background: #6366f1; color: white; }
-
-        .urgent-item { border-left: 4px solid var(--primary); background: var(--chill-purple); margin-bottom: 10px; padding: 14px; border-radius: 18px; display: flex; justify-content: space-between; align-items: center; }
-        .urgent-info b { display: block; font-size: 15px; color: #4338ca; }
-        .urgent-info small { color: var(--accent); font-weight: 600; font-size: 12px; }
-
-        /* 文件夹折叠逻辑 */
-        .folder-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; padding: 5px 0; }
-        .folder-title { font-size: 17px; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+        /* 仓库文件夹 */
+        .folder-header { display: flex; justify-content: space-between; align-items: center; }
         .folder-arrow { font-size: 12px; color: var(--gray); transition: 0.3s; }
         .folder-arrow.open { transform: rotate(180deg); }
-        .folder-content { display: none; margin-top: 15px; border-top: 1px dashed #e2e8f0; padding-top: 10px; }
+        .folder-content { display: none; margin-top: 15px; border-top: 1px dashed #f1f5f9; padding-top: 10px; }
         .folder-content.open { display: block; }
 
-        /* 子任务样式 */
-        .task-item { display: flex; justify-content: space-between; align-items: center; background: #f8fafc; padding: 12px 16px; border-radius: 18px; margin-top: 10px; border: 1px solid #f1f5f9; }
-        .task-info b { font-size: 14px; color: var(--text); }
-        .task-info span { font-size: 11px; color: var(--gray); margin-left: 8px; }
-        .btn-check { width: 30px; height: 30px; border-radius: 10px; border: 2.5px solid #e0e7ff; background: white; color: transparent; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
-        .btn-check:hover { border-color: var(--primary); color: var(--primary); }
+        /* 📅 战术地图 (Bubble Pop-up Design) */
+        .heatmap-trigger { 
+            position: fixed; bottom: 35px; left: 25px; width: 56px; height: 56px; 
+            border-radius: 22px; background: white; box-shadow: 0 8px 25px rgba(0,0,0,0.08); 
+            display: flex; align-items: center; justify-content: center; font-size: 24px; z-index: 200;
+        }
+        .heatmap-trigger:active { transform: scale(0.9); background: #f1f5f9; }
+
+        .heatmap-overlay { 
+            display: none; position: fixed; bottom: 100px; left: 25px; 
+            width: 210px; background: white; padding: 18px; 
+            border-radius: 24px; box-shadow: 0 15px 45px rgba(0,0,0,0.15); z-index: 201; 
+            transform-origin: bottom left; /* 动画原点设为左下角按钮处 */
+            animation: popBubble 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+        }
+        .heatmap-header { font-size: 11px; font-weight: bold; color: var(--primary); margin-bottom: 12px; letter-spacing: 0.5px; }
+        
+        .heatmap-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+        .weekday-label { font-size: 8px; color: var(--gray); text-align: center; margin-bottom: 4px; }
+        .heat-box { 
+            width: 22px; height: 22px; border-radius: 6px; 
+            background: #f1f5f9; font-size: 9px; 
+            display: flex; align-items: center; justify-content: center; 
+            color: #cbd5e1; font-weight: bold; pointer-events: none; /* 去掉交互感 */
+        }
+        .heat-box.today { border: 1.5px solid var(--primary); color: var(--primary); background: white; }
+        .heat-box.has-task { background: #e0e7ff; color: #6366f1; }
+        .heat-box.many-tasks { background: #6366f1; color: white; }
 
         /* 底部操作 */
-        .bottom-nav { position: fixed; bottom: 30px; width: 90%; max-width: 450px; left: 50%; transform: translateX(-50%); }
-        .btn-main { width: 100%; background: var(--primary); color: white; padding: 18px; border-radius: 24px; font-weight: bold; font-size: 16px; box-shadow: 0 10px 20px rgba(99, 102, 241, 0.2); }
+        .btn-add-course-float { 
+            position: fixed; bottom: 35px; right: 25px; width: 56px; height: 56px; 
+            border-radius: 22px; background: var(--primary); color: white; 
+            font-size: 30px; box-shadow: 0 8px 25px rgba(99, 102, 241, 0.3); 
+            display: flex; align-items: center; justify-content: center;
+        }
 
-        /* 弹窗 */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(10px); }
-        .modal-content { background: white; padding: 30px; border-radius: 35px; width: 85%; max-width: 400px; }
-        .form-group input { width: 100%; border: 2px solid #f1f5f9; padding: 14px; border-radius: 18px; box-sizing: border-box; font-size: 16px; margin-top: 8px; outline: none; }
+        /* 动画与遮罩 */
+        @keyframes popBubble { 
+            from { opacity: 0; transform: scale(0.3) translateY(20px); } 
+            to { opacity: 1; transform: scale(1) translateY(0); } 
+        }
+        @keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(8px); }
+        .modal-content { background: white; padding: 25px; border-radius: 30px; width: 90%; max-width: 400px; }
+        .form-input { width: 100%; border: 2px solid #f1f5f9; padding: 15px; border-radius: 16px; font-size: 16px; margin-bottom: 12px; }
+        .btn-main { width: 100%; background: var(--primary); color: white; padding: 16px; border-radius: 20px; font-weight: bold; }
     </style>
 </head>
 <body>
 
+    <!-- 顶部 -->
+    <div class="top-status-bar">
+        <div class="time-display">
+            <span class="time-week" id="week-display">WEEK 6</span>
+            <span class="time-day" id="day-display">星期四 · 2026/03/02</span>
+        </div>
+        <div class="monster-container">
+            <span id="monster-avatar">👾</span>
+            <button class="energy-bubble bubble-0" id="eb-0" onclick="setEnergy(0)">💤</button>
+            <button class="energy-bubble bubble-1" id="eb-1" onclick="setEnergy(1)">🔋</button>
+            <button class="energy-bubble bubble-2" id="eb-2" onclick="setEnergy(2)">⚡️</button>
+        </div>
+    </div>
+
+    <!-- 导航 -->
     <div class="tab-nav">
         <button class="tab-btn active" id="btn-focus" onclick="switchTab('focus')">🎯 今日焦点</button>
         <button class="tab-btn" id="btn-projects" onclick="switchTab('projects')">🗃️ 任务仓库</button>
     </div>
 
-    <!-- 顶部怪兽区 (两页公用或仅焦点页，建议公用以保持身份感) -->
-    <div id="monster-header">
-        <div id="time-info">...</div>
-        <span id="monster-avatar">👾</span>
-        <div id="monster-dialogue" style="font-size: 14px; color: var(--gray);">每一小步都值得庆祝 ✨</div>
-        <div class="mood-chart" id="mood-chart"></div>
-        <div style="display:flex; gap:12px; justify-content:center;">
-            <button class="energy-btn" onclick="setEnergy(0)">💤</button>
-            <button class="energy-btn" onclick="setEnergy(1)">🔋</button>
-            <button class="energy-btn" onclick="setEnergy(2)">⚡️</button>
-        </div>
-    </div>
-
-    <!-- 今日焦点页 -->
-    <div id="page-focus" style="width: 100%; max-width: 450px;">
-        <div class="main-mission-card">
+    <!-- 看板 -->
+    <div id="page-focus" class="action-core">
+        <div class="card main-mission-card">
             <div style="display:flex; justify-content:space-between; align-items:center;">
-                <span style="font-weight:bold; font-size:16px;">🔥 当前主要目标</span>
-                <button style="background:rgba(255,255,255,0.2); width:30px; height:30px; border-radius:10px; color:white;" onclick="openModal('main-mission-modal')">+</button>
+                <span style="font-weight:bold; font-size:16px;">🔥 当前主线项目</span>
+                <button onclick="openModal('mm-modal')" style="background:rgba(255,255,255,0.2); width:32px; height:32px; border-radius:10px; color:white; font-size:20px;">+</button>
             </div>
             <div id="main-mission-list"></div>
         </div>
 
         <div class="card">
-            <div style="font-size:14px; font-weight:bold; color:var(--primary); margin-bottom:12px;">📅 未来 DDL 全景图</div>
-            <div class="heatmap-grid" id="heatmap-grid"></div>
-        </div>
-
-        <div class="card" id="urgent-flow-card">
             <div style="font-size:14px; font-weight:bold; color:var(--primary); margin-bottom:12px;">✨ 接下来要做...</div>
             <div id="urgent-list"></div>
         </div>
     </div>
 
-    <!-- 任务仓库页 -->
-    <div id="page-projects" style="width: 100%; max-width: 450px; display: none;">
+    <!-- 仓库 -->
+    <div id="page-projects" class="action-core" style="display:none;">
         <div id="folder-container"></div>
-        <div class="bottom-nav"><button class="btn-main" onclick="addNewCourse()">+ 添加新课程项目</button></div>
     </div>
 
+    <!-- 📅 气泡战术地图 -->
+    <button class="heatmap-trigger" onclick="toggleHeatmap()">📅</button>
+    <div class="heatmap-overlay" id="heatmap-overlay">
+        <div class="heatmap-header">未来 28 天计划</div>
+        <div class="heatmap-grid" style="margin-bottom:4px">
+            <div class="weekday-label">一</div><div class="weekday-label">二</div><div class="weekday-label">三</div>
+            <div class="weekday-label">四</div><div class="weekday-label">五</div><div class="weekday-label">六</div>
+            <div class="weekday-label">日</div>
+        </div>
+        <div class="heatmap-grid" id="heatmap-grid-inner"></div>
+    </div>
+
+    <!-- 添加按钮 -->
+    <button class="btn-add-course-float" id="add-course-btn" style="display:none;" onclick="addNewCourse()">+</button>
+
     <!-- 弹窗 -->
-    <div id="main-mission-modal" class="modal"><div class="modal-content">
-        <h2 style="margin-top:0">设定主线</h2>
-        <input type="text" id="mm-name" class="form-group" style="width:100%; border:2px solid #f1f5f9; padding:14px; border-radius:18px;" placeholder="如：XX项目负责人">
-        <button class="btn-main" style="margin-top:20px;" onclick="saveMainMission()">确定开启</button>
-        <button class="btn-main" style="background:#f1f5f9; color:var(--gray); box-shadow:none; margin-top:10px;" onclick="closeModals()">取消</button>
+    <div id="mm-modal" class="modal"><div class="modal-content">
+        <h2>开启新项目</h2>
+        <input type="text" id="mm-input" class="form-input" placeholder="如：负责人、参赛选手...">
+        <button class="btn-main" onclick="saveMainMission()">开启</button>
+        <button onclick="closeModals()" style="width:100%; background:none; color:var(--gray); margin-top:15px; border:none;">再想想</button>
+    </div></div>
+
+    <div id="st-modal" class="modal"><div class="modal-content">
+        <h2>拆解下一步</h2>
+        <input type="text" id="st-input" class="form-input" placeholder="具体要做什么？">
+        <button class="btn-main" style="background:var(--main-mission)" onclick="saveSubTask()">存入清单</button>
+        <button onclick="closeModals()" style="width:100%; background:none; color:var(--gray); margin-top:15px; border:none;">取消</button>
     </div></div>
 
     <div id="task-modal" class="modal"><div class="modal-content">
-        <h2 style="margin-top:0">🎒 添加子任务</h2>
-        <div class="form-group"><label style="font-size:12px; color:var(--gray)">任务名</label><input type="text" id="t-name"></div>
-        <div class="form-group" style="margin-top:15px;"><label style="font-size:12px; color:var(--gray)">截止日期</label><input type="date" id="t-ddl"></div>
-        <button class="btn-main" style="margin-top:20px;" onclick="saveTask()">存入背包</button>
-        <button class="btn-main" style="background:#f1f5f9; color:var(--gray); box-shadow:none; margin-top:10px;" onclick="closeModals()">取消</button>
+        <h2>添加 DDL</h2>
+        <input type="text" id="t-name" class="form-input" placeholder="任务名称">
+        <input type="date" id="t-ddl" class="form-input">
+        <button class="btn-main" onclick="saveTask()">确认添加</button>
+        <button onclick="closeModals()" style="width:100%; background:none; color:var(--gray); margin-top:15px; border:none;">取消</button>
     </div></div>
 
     <script>
-        const SEMESTER_START = new Date('2026-03-02'); 
+        const SEMESTER_START = new Date('2026-03-02');
         let state = {
             energy: 1,
-            courses: JSON.parse(localStorage.getItem('monster_v8_data')) || [],
-            mainMissions: JSON.parse(localStorage.getItem('monster_main_missions')) || [],
-            moodHistory: JSON.parse(localStorage.getItem('monster_mood_v2')) || [],
-            openFolders: [], // 记录哪些文件夹是展开的
-            curCId: null
+            courses: JSON.parse(localStorage.getItem('m_v13_c')) || [],
+            missions: JSON.parse(localStorage.getItem('m_v13_m')) || [],
+            moodH: JSON.parse(localStorage.getItem('m_v13_h')) || [],
+            openF: [], curC: null, curM: null
         };
 
         function save() {
-            localStorage.setItem('monster_v8_data', JSON.stringify(state.courses));
-            localStorage.setItem('monster_main_missions', JSON.stringify(state.mainMissions));
-            localStorage.setItem('monster_mood_v2', JSON.stringify(state.moodHistory));
+            localStorage.setItem('m_v13_c', JSON.stringify(state.courses));
+            localStorage.setItem('m_v13_m', JSON.stringify(state.missions));
+            localStorage.setItem('m_v13_h', JSON.stringify(state.moodH));
         }
 
-        function switchTab(tab) {
-            document.getElementById('page-focus').style.display = (tab === 'focus' ? 'block' : 'none');
-            document.getElementById('page-projects').style.display = (tab === 'projects' ? 'block' : 'none');
-            document.getElementById('btn-focus').classList.toggle('active', tab === 'focus');
-            document.getElementById('btn-projects').classList.toggle('active', tab === 'projects');
-            render();
-        }
-
-        function toggleFolder(id) {
-            const idx = state.openFolders.indexOf(id);
-            if (idx > -1) state.openFolders.splice(idx, 1);
-            else state.openFolders.push(id);
+        function switchTab(t) {
+            document.getElementById('page-focus').style.display = t === 'focus' ? 'block' : 'none';
+            document.getElementById('page-projects').style.display = t === 'projects' ? 'block' : 'none';
+            document.getElementById('add-course-btn').style.display = t === 'projects' ? 'flex' : 'none';
+            document.getElementById('btn-focus').classList.toggle('active', t === 'focus');
+            document.getElementById('btn-projects').classList.toggle('active', t === 'projects');
             render();
         }
 
         function render() {
-            renderTime();
-            renderMood();
-            renderMainMissions();
-            if (document.getElementById('page-focus').style.display !== 'none') {
-                renderHeatmap();
-                renderUrgentFlow();
-            } else {
-                renderFolders();
-            }
+            updateTime(); renderMissions(); renderUrgent(); renderFolders(); renderHeatmap(); updateEnergyUI();
         }
 
-        function renderTime() {
+        function updateTime() {
             const now = new Date();
-            const diffDays = Math.floor((now - SEMESTER_START) / (24 * 60 * 60 * 1000));
-            const weekNum = Math.floor(diffDays / 7) + 1;
-            const weekDay = ["日", "一", "二", "三", "四", "五", "六"][now.getDay()];
-            document.getElementById('time-info').innerText = `WEEK ${Math.max(1, weekNum)} · 星期${weekDay}`;
+            const diffDays = Math.floor((now - SEMESTER_START) / 86400000);
+            document.getElementById('week-display').innerText = `WEEK ${Math.max(1, Math.floor(diffDays/7)+1)}`;
+            document.getElementById('day-display').innerText = `星期${["日","一","二","三","四","五","六"][now.getDay()]} · ${now.toLocaleDateString()}`;
         }
 
-        function renderMainMissions() {
+        function renderMissions() {
             const list = document.getElementById('main-mission-list');
-            list.innerHTML = state.mainMissions.map(m => `
-                <div class="main-mission-item">
-                    <span>✨ ${m.text}</span>
-                    <button class="btn-delete-mission" onclick="deleteMainMission(${m.id})">×</button>
+            list.innerHTML = state.missions.map(m => `
+                <div class="mission-group">
+                    <div class="mission-header">
+                        <span style="font-size:14px;">✨ ${m.text}</span>
+                        <div style="display:flex; gap:10px;">
+                            <button onclick="openSubModal(${m.id})" style="background:rgba(255,255,255,0.2); width:28px; height:28px; border-radius:8px; color:white;">+</button>
+                            <button onclick="deleteMission(${m.id})" style="background:rgba(255,255,255,0.2); width:28px; height:28px; border-radius:8px; color:white;">×</button>
+                        </div>
+                    </div>
+                    ${(m.subTasks || []).map(st => `
+                        <div class="sub-task-item ${st.done ? 'done' : ''}">
+                            <span>${st.text}</span>
+                            <button class="btn-check" style="background:${st.done?'white':'transparent'}; border-color:white; color:var(--primary); width:22px; height:22px; border-radius:6px;" onclick="toggleSub(${m.id}, ${st.id})">${st.done?'✓':''}</button>
+                        </div>
+                    `).join('')}
                 </div>
             `).join('');
         }
 
-        function renderHeatmap() {
-            const grid = document.getElementById('heatmap-grid'); grid.innerHTML = '';
-            const taskMap = {};
-            state.courses.forEach(c => c.tasks.forEach(t => { if(!t.done && t.ddl) taskMap[t.ddl] = (taskMap[t.ddl] || 0) + 1; }));
-            const today = new Date();
-            for (let i = 0; i < 30; i++) {
-                const d = new Date(); d.setDate(today.getDate() + i);
-                const dStr = d.toISOString().split('T')[0];
-                const count = taskMap[dStr] || 0;
-                let cls = count >= 2 ? 'many-tasks' : (count === 1 ? 'has-task' : '');
-                grid.innerHTML += `<div class="heat-box ${cls} ${i===0?'today':''}">${i===0?'今':d.getDate()}</div>`;
-            }
-        }
-
-        function renderUrgentFlow() {
+        function renderUrgent() {
             const all = [];
             state.courses.forEach(c => c.tasks.forEach(t => { if(!t.done) all.push({...t, cName: c.name, cId: c.id}); }));
             all.sort((a,b) => new Date(a.ddl) - new Date(b.ddl));
-            const list = document.getElementById('urgent-list');
-            if(all.length > 0) {
-                list.innerHTML = all.slice(0, 5).map(t => `
-                    <div class="urgent-item">
-                        <div class="urgent-info">
-                            <b>${t.name} <small style="font-weight:normal; color:var(--gray)">@${t.cName}</small></b>
-                            <small>📅 ${t.ddl || '待定'}</small>
-                        </div>
-                        <button class="btn-check" onclick="finishTask(${t.cId}, ${t.id})">✓</button>
-                    </div>
-                `).join('');
-            } else { list.innerHTML = '<div style="text-align:center; color:var(--gray); font-size:12px;">目前没有紧急任务，享受当下吧 ☕️</div>'; }
+            document.getElementById('urgent-list').innerHTML = all.slice(0, 5).map(t => `
+                <div class="urgent-item">
+                    <div><b>${t.name} <small style="color:var(--gray)">@${t.cName}</small></b><br><small>📅 ${t.ddl || '待定'}</small></div>
+                    <button class="btn-check" onclick="finishTask(${t.cId}, ${t.id})">✓</button>
+                </div>
+            `).join('') || '<div style="text-align:center; padding:20px; color:var(--gray); font-size:12px;">暂时没有任务 ✨</div>';
         }
 
         function renderFolders() {
             const container = document.getElementById('folder-container');
-            container.innerHTML = '';
-            state.courses.forEach(c => {
-                const isOpen = state.openFolders.includes(c.id);
-                const activeTasks = c.tasks.filter(t => !t.done);
-                const folder = document.createElement('div');
-                folder.className = 'card';
-                folder.innerHTML = `
-                    <div class="folder-header" onclick="toggleFolder(${c.id})">
-                        <div class="folder-title">
-                            📚 ${c.name} 
-                            <span style="font-size:11px; background:var(--chill-purple); color:var(--primary); padding:2px 8px; border-radius:10px;">${activeTasks.length}</span>
-                        </div>
-                        <div style="display:flex; align-items:center; gap:15px;">
-                            <button class="energy-btn" style="width:30px; height:30px; font-size:14px; background:var(--chill-purple); color:var(--primary)" onclick="event.stopPropagation(); openAddTask(${c.id})">+</button>
+            container.innerHTML = state.courses.map(c => {
+                const isOpen = state.openF.includes(c.id);
+                const active = c.tasks.filter(t => !t.done);
+                return `<div class="card">
+                    <div class="folder-header" onclick="toggleF(${c.id})">
+                        <div class="folder-title">📚 ${c.name} <span style="font-size:11px; color:var(--primary); background:var(--chill-purple); padding:2px 8px; border-radius:10px;">${active.length}</span></div>
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <button onclick="event.stopPropagation(); openTaskModal(${c.id})" style="background:var(--chill-purple); color:var(--primary); width:32px; height:32px; border-radius:10px;">+</button>
                             <span class="folder-arrow ${isOpen?'open':''}">▼</span>
                         </div>
                     </div>
                     <div class="folder-content ${isOpen?'open':''}">
-                        ${activeTasks.map(t => `
-                            <div class="task-item">
-                                <div class="task-info"><b>${t.name}</b> <span>${t.ddl ? t.ddl.slice(5) : ''}</span></div>
-                                <button class="btn-check" onclick="finishTask(${c.id}, ${t.id})">✓</button>
-                            </div>
-                        `).join('') || '<div style="text-align:center; font-size:12px; color:var(--gray); padding:10px;">暂无任务，点击上方 + 号添加</div>'}
-                        <button onclick="deleteCourse(${c.id})" style="margin-top:15px; font-size:11px; color:var(--danger); background:none; width:100%; text-align:right;">× 删除此课程项目</button>
+                        ${active.map(t => `<div class="urgent-item" style="border-radius:15px; margin-bottom:8px;">
+                            <span><b>${t.name}</b> <small>${t.ddl ? t.ddl.slice(5) : ''}</small></span>
+                            <button class="btn-check" style="width:28px; height:28px;" onclick="finishTask(${c.id}, ${t.id})">✓</button>
+                        </div>`).join('') || '<div style="font-size:11px; text-align:center; padding:10px;">空</div>'}
+                        <button onclick="deleteCourse(${c.id})" style="width:100%; text-align:right; font-size:10px; color:var(--danger); background:none; padding-top:10px; border:none;">删除此项目</button>
                     </div>
-                `;
-                container.appendChild(folder);
-            });
+                </div>`;
+            }).join('');
         }
 
-        function renderMood() {
-            const chart = document.getElementById('mood-chart'); chart.innerHTML = '';
-            const todayStr = new Date().toISOString().split('T')[0];
-            for (let i = 0; i < 7; i++) {
-                const d = new Date(); d.setDate(d.getDate() - (6 - i));
+        function renderHeatmap() {
+            const grid = document.getElementById('heatmap-grid-inner'); grid.innerHTML = '';
+            const taskMap = {};
+            state.courses.forEach(c => c.tasks.forEach(t => { if(!t.done && t.ddl) taskMap[t.ddl] = (taskMap[t.ddl] || 0) + 1; }));
+            
+            const today = new Date();
+            let startDay = new Date(today);
+            let dayOffset = today.getDay() === 0 ? 6 : today.getDay() - 1;
+            startDay.setDate(today.getDate() - dayOffset);
+
+            for (let i = 0; i < 28; i++) {
+                const d = new Date(startDay); d.setDate(startDay.getDate() + i);
                 const dStr = d.toISOString().split('T')[0];
-                const rec = state.moodHistory.find(m => m.date === dStr);
-                chart.innerHTML += `<div class="mood-bar ${dStr===todayStr?'active':''}" style="height: ${rec ? rec.val * 15 : 8}px"></div>`;
+                const count = taskMap[dStr] || 0;
+                let cls = count >= 2 ? 'many-tasks' : (count === 1 ? 'has-task' : '');
+                const isToday = dStr === today.toISOString().split('T')[0];
+                grid.innerHTML += `<div class="heat-box ${cls} ${isToday?'today':''}">${d.getDate()}</div>`;
             }
         }
 
-        // --- 交互功能 ---
+        function toggleHeatmap() { 
+            const el = document.getElementById('heatmap-overlay');
+            el.style.display = el.style.display === 'block' ? 'none' : 'block';
+        }
         function openModal(id) { document.getElementById(id).style.display = 'flex'; }
         function closeModals() { document.querySelectorAll('.modal').forEach(m => m.style.display='none'); }
         function saveMainMission() {
-            const txt = document.getElementById('mm-name').value;
-            if(txt) { state.mainMissions.push({ id: Date.now(), text: txt }); save(); render(); closeModals(); }
+            const val = document.getElementById('mm-input').value;
+            if(val) { state.missions.push({ id: Date.now(), text: val, subTasks: [] }); save(); render(); closeModals(); document.getElementById('mm-name').value=''; }
         }
-        function deleteMainMission(id) { state.mainMissions = state.mainMissions.filter(m => m.id !== id); save(); render(); }
-        function addNewCourse() { const n = prompt("课程/项目名称:"); if(n) { state.courses.push({ id: Date.now(), name: n, tasks: [] }); save(); render(); } }
-        function deleteCourse(id) { if(confirm("确定删除整个课程吗？")) { state.courses = state.courses.filter(c => c.id !== id); save(); render(); } }
-        function openAddTask(cid) { state.curCId = cid; openModal('task-modal'); }
+        function openSubModal(mid) { state.curM = mid; openModal('st-modal'); }
+        function saveSubTask() {
+            const val = document.getElementById('st-input').value;
+            if(val) { state.missions.find(m => m.id === state.curM).subTasks.push({ id: Date.now(), text: val, done: false }); save(); render(); closeModals(); document.getElementById('st-input').value=''; }
+        }
+        function toggleSub(mid, stid) {
+            const m = state.missions.find(m => m.id === mid);
+            const st = m.subTasks.find(s => s.id === stid);
+            st.done = !st.done; save(); render();
+        }
+        function deleteMission(id) { state.missions = state.missions.filter(m => m.id !== id); save(); render(); }
+        function addNewCourse() { const n = prompt("项目名称:"); if(n) { state.courses.push({ id: Date.now(), name: n, tasks: [] }); save(); render(); } }
+        function deleteCourse(id) { if(confirm("删除？")) { state.courses = state.courses.filter(c => c.id !== id); save(); render(); } }
+        function openTaskModal(cid) { state.curC = cid; openModal('task-modal'); }
         function saveTask() {
             const n = document.getElementById('t-name').value;
             const d = document.getElementById('t-ddl').value;
-            if(n) { state.courses.find(c => c.id === state.curCId).tasks.push({ id: Date.now(), name: n, ddl: d, done: false }); save(); render(); closeModals(); }
+            if(n) { state.courses.find(c => c.id === state.curC).tasks.push({ id: Date.now(), name: n, ddl: d, done: false }); save(); render(); closeModals(); }
         }
         function finishTask(cid, tid) { state.courses.find(c => c.id === cid).tasks.find(t => t.id === tid).done = true; save(); render(); }
-        function setEnergy(v) {
-            const d = new Date().toISOString().split('T')[0];
-            state.moodHistory = state.moodHistory.filter(h => h.date !== d);
-            state.moodHistory.push({ date: d, val: v+1 });
-            save(); render();
+        function toggleF(id) { const idx = state.openF.indexOf(id); if(idx > -1) state.openF.splice(idx, 1); else state.openF.push(id); render(); }
+        function setEnergy(v) { state.energy = v; save(); render(); }
+        function updateEnergyUI() {
+            document.querySelectorAll('.energy-bubble').forEach((b, i) => b.classList.toggle('active', i === state.energy));
         }
 
         render();
