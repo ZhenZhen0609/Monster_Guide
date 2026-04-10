@@ -1,5 +1,6 @@
 {
  "name":"Monster Guide",
+ "short_name":"Monster Guide",
  "start_url":"/",
  "display":"standalone",
  "icons":[
